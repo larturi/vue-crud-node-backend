@@ -4,9 +4,14 @@ const router = express.Router();
 // Importar el modelo Nota
 const Nota = require('../models/nota');
 
+// Middleware Autenticacion
+const {verificarAuth, verificarAdministrador} = require('../middlewares/autentication');
+
 // Agregar una Nota
-router.post('/nueva-nota', async(req, res) => {
+router.post('/nueva-nota', verificarAuth, async(req, res) => {
     const body = req.body;
+
+    body.usuarioId = req.usuario._id;
 
     try {
         const notaDB = await Nota.create(body);
@@ -35,9 +40,12 @@ router.get('/nota/:id', async(req, res) => {
 });
 
 // Get con todas las notas
-router.get('/nota', async(req, res) => {
+router.get('/nota', verificarAuth, async(req, res) => {
+
+    const usuarioId = req.usuario._id;
+
     try {
-        const notaDB = await Nota.find();
+        const notaDB = await Nota.find({usuarioId});
         res.json(notaDB);
     } catch (error) {
         return res.status(500).json({
@@ -85,5 +93,6 @@ router.put('/nota/:id', async(req, res) => {
         });
     }
 });
+
 // Exportacion del router
 module.exports = router;
